@@ -1,123 +1,1 @@
-import java.awt.*;
-
-public class Board {
-	// grid line width
-	public static final int GRID_WIDTH = 8;
-	// grid line half width
-	public static final int GRID_WIDTH_HALF = GRID_WIDTH / 2;
-
-	//2D array of ROWS-by-COLS Cell instances
-	Cell[][] cells;
-
-	/**
-	 * Constructor to create the game board
-	 */
-	public Board() {
-		cells = new Cell[GameMain.ROWS][GameMain.COLS];// Initialize the 2D array of cells
-
-		for (int row = 0; row < GameMain.ROWS; ++row) {
-			for (int col = 0; col < GameMain.COLS; ++col) {
-				cells[row][col] = new Cell(row, col);
-			}
-		}
-	}
-
-
-	/**
-	 * Return true if it is a draw (i.e., no more EMPTY cells)
-	 */
-	/** Return true if it is a draw (i.e., no more EMPTY cells) */
-	public boolean isDraw() {
-		for (int row = 0; row < GameMain.ROWS; ++row) {
-			for (int col = 0; col < GameMain.COLS; ++col) {
-				if (cells[row][col].content == Player.EMPTY) {
-					return false; // If any cell is empty, the game is not a draw
-				}
-			}
-		}
-		return true; // If no empty cells are found, the game is a draw
-	}
-
-
-	/* Return true if the current player "thePlayer" has won after making their move */
-	public boolean hasWon(Player thePlayer, int playerRow, int playerCol) {
-		// Check if player has 3-in-that-row
-		boolean rowWin = true;
-		for (int col = 0; col < GameMain.COLS; ++col) {
-			if (cells[playerRow][col].content != thePlayer) {
-				rowWin = false;
-				break;
-			}
-		}
-		if (rowWin) return true;
-
-		// Check if player has 3-in-that-column
-		boolean colWin = true;
-		for (int row = 0; row < GameMain.ROWS; ++row) {
-			if (cells[row][playerCol].content != thePlayer) {
-				colWin = false;
-				break;
-			}
-		}
-		if (colWin) return true;
-
-		// Check the diagonal
-		if (playerRow == playerCol) {
-			boolean diagonalWin = true;
-			for (int i = 0; i < GameMain.ROWS; ++i) {
-				if (cells[i][i].content != thePlayer) {
-					diagonalWin = false;
-					break;
-				}
-			}
-			if (diagonalWin) return true;
-		}
-
-		// Check the other diagonal
-		if (playerRow + playerCol == GameMain.ROWS - 1) {
-			boolean otherDiagonalWin = true;
-			for (int i = 0; i < GameMain.ROWS; ++i) {
-				if (cells[i][GameMain.ROWS - 1 - i].content != thePlayer) {
-					otherDiagonalWin = false;
-					break;
-				}
-			}
-			if (otherDiagonalWin) return true;
-		}
-
-		// no winner, keep playing
-		return false;
-	}
-
-
-
-	/**
-	 * Draws the grid (rows then columns) using constant sizes, then call on the Cells
-	 * to paint themselves into the grid
-	 */
-	public void paint(Graphics g) {
-		// Draw the grid
-		g.setColor(Color.gray);
-		for (int row = 1; row < GameMain.ROWS; ++row) {
-			g.fillRoundRect(
-					0, GameMain.CELL_SIZE * row - GRID_WIDTH_HALF,
-					GameMain.CANVAS_WIDTH - 1, GRID_WIDTH,
-					GRID_WIDTH, GRID_WIDTH
-			);
-		}
-		for (int col = 1; col < GameMain.COLS; ++col) {
-			g.fillRoundRect(
-					GameMain.CELL_SIZE * col - GRID_WIDTH_HALF, 0,
-					GRID_WIDTH, GameMain.CANVAS_HEIGHT - 1,
-					GRID_WIDTH, GRID_WIDTH
-			);
-		}
-
-		// Draw the cells
-		for (int row = 0; row < GameMain.ROWS; ++row) {
-			for (int col = 0; col < GameMain.COLS; ++col) {
-				cells[row][col].paint(g);
-			}
-		}
-	}
-}
+import java.awt.*;public class Board {	// grid line width	public static final int GRID_WIDTH = 8;	// grid line half width	public static final int GRID_WIDTH_HALF = GRID_WIDTH / 2;	// Constants for player symbols	private static final char EMPTY_CELL = ' ';	private static final char PLAYER_X = 'X';	private static final char PLAYER_O = 'O';	private Cell[][] cells;	// Assume there's a Player enum defined somewhere	private enum Player {		X, O, EMPTY	}	/* Constructor to create the game board */	public Board() {		cells = new Cell[GameMain.ROWS][GameMain.COLS];// Initialize the 2D array of cells		initializeCells();	}	private void initializeCells() {		for (int row = 0; row < GameMain.ROWS; ++row) {			for (int col = 0; col < GameMain.COLS; ++col) {				cells[row][col] = new Cell(row, col);			}		}	}	/* Return true if it is a draw */	public boolean isDraw() {		// Iterate through each cell on the game board		for (int row = 0; row < GameMain.ROWS; ++row) {			for (int col = 0; col < GameMain.COLS; ++col) {				// If any cell is empty, the game is not a draw				if (cells[row][col].content == Player.EMPTY) {					return false;				}			}		}		// If no empty cells are found, the game is a draw		return true;	}	private boolean checkArrayForWin(Player[] array, Player playerSymbol) {		for (Player cell : array) {			if (cell != playerSymbol) {				return false;			}		}		return true;	}		/* Return true if the current player "thePlayer" has won after making their move */	public boolean hasWon(Player thePlayer, int playerRow, int playerCol) {		// Check if player has three symbols in that row		if (checkArrayForWin(cells[playerRow], thePlayer)) {			return true;		}		Player[] rowArray = new Player[GameMain.COLS];		for (int col = 0; col < GameMain.COLS; ++col) {			rowArray[col] = cells[playerRow][col].content;		}		if (checkArrayForWin(rowArray, thePlayer)) {			return true;		}		// Check if player has three symbols in that column		Player[] colArray = new Player[GameMain.ROWS];		for (int row = 0; row < GameMain.ROWS; ++row) {			colArray[row] = cells[row][playerCol].content;		}		if (checkArrayForWin(colArray, thePlayer)) {			return true;		}		// Check the diagonal if the move is on the main diagonal		if (playerRow == playerCol) {			Player[] mainDiagonalArray = new Player[GameMain.ROWS];			for (int i = 0; i < GameMain.ROWS; ++i) {				mainDiagonalArray[i] = cells[i][i].content;			}			if (checkArrayForWin(mainDiagonalArray, thePlayer)) {				return true;			}		}		// Check the other diagonal if the move is on that diagonal		if (playerRow + playerCol == GameMain.ROWS - 1) {			Player[] antiDiagonalArray = new Player[GameMain.ROWS];			for (int i = 0; i < GameMain.ROWS; ++i) {				antiDiagonalArray[i] = cells[i][GameMain.ROWS - 1 - i].content;			}			if (checkArrayForWin(antiDiagonalArray, thePlayer)) {				return true;			}		}		/// If no winning conditions are met, return false		return false;	}	/* Draws the grid (rows then columns) using constant sizes, then call on the Cells  to paint themselves into the grid */	/* Draws the grid and the cells */	public void paint(Graphics g) {		// Draw the grid lines		g.setColor(Color.gray);		for (int row = 1; row < GameMain.ROWS; ++row) {			drawHorizontalLine(g, 0, GameMain.CELL_SIZE * row - GRID_WIDTH_HALF, GameMain.CANVAS_WIDTH - 1);		}		for (int col = 1; col < GameMain.COLS; ++col) {			drawVerticalLine(g, GameMain.CELL_SIZE * col - GRID_WIDTH_HALF, 0, GameMain.CANVAS_HEIGHT - 1);		}		// Draw the cells		for (int row = 0; row < GameMain.ROWS; ++row) {			for (int col = 0; col < GameMain.COLS; ++col) {				cells[row][col].paint(g);			}		}	}	private void drawHorizontalLine(Graphics g, int x, int y, int width) {		g.fillRoundRect(x, y, width - 1, GRID_WIDTH, GRID_WIDTH, GRID_WIDTH);	}	private void drawVerticalLine(Graphics g, int x, int y, int height) {		g.fillRoundRect(x, y, GRID_WIDTH, height - 1, GRID_WIDTH, GRID_WIDTH);	}}
