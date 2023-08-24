@@ -28,7 +28,7 @@ public class GameMain extends JPanel implements MouseListener{
 	
 	//Declare game object variables
 	private Board board;
-	private enum GameState { PLAYING, DRAW, X_WON, O_WON }
+	private enum GameState { PLAYING, DRAW, CROSS_WON, NOUGHT_WON }
 	private GameState currentState;
 	// variable keeps track of whose turn it is
 	private Player currentPlayer;
@@ -38,59 +38,56 @@ public class GameMain extends JPanel implements MouseListener{
 	//Constructor: Sets up the UI and game components on the panel
 	public GameMain() {
 		super(); // Call the constructor of the superclass (JPanel)
-		// Initialize the game state and current player
-		currentState = GameState.PLAYING;
-		currentPlayer = Player.X; // Assuming having a Player enum with X and O
+		initializeUI();
+		initializeGame();
+	}
 
-		// Other initialization code for UI components
-		statusBar = new JLabel("Current Status: " + currentState);
-		// Add the panel to the frame and set it up
-		JFrame frame = new JFrame("Game Title");
+	private void initializeUI() {
+		JFrame frame = new JFrame(TITLE);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.add(this); // Add the GameMain panel
+		frame.add(this);
 		frame.pack();
 		frame.setVisible(true);
 
-		// Add mouse listener to this panel
 		addMouseListener(this);
 
-		// Set up the status bar (JLabel) to display status message
-		statusBar = new JLabel("         ");       
-		statusBar.setFont(new Font(Font.DIALOG_INPUT, Font.BOLD, 14));       
-		statusBar.setBorder(BorderFactory.createEmptyBorder(2, 5, 4, 5));       
-		statusBar.setOpaque(true);       
-		statusBar.setBackground(Color.LIGHT_GRAY);  
-		
-		//layout of the panel is in border layout
-		setLayout(new BorderLayout());       
+		statusBar = new JLabel("         ");
+		statusBar.setFont(new Font(Font.DIALOG_INPUT, Font.BOLD, 14));
+		statusBar.setBorder(BorderFactory.createEmptyBorder(2, 5, 4, 5));
+		statusBar.setOpaque(true);
+		statusBar.setBackground(Color.LIGHT_GRAY);
+
+		setLayout(new BorderLayout());
 		add(statusBar, BorderLayout.SOUTH);
-		// account for statusBar height in overall height
 		setPreferredSize(new Dimension(CANVAS_WIDTH, CANVAS_HEIGHT + 30));
-
-		// Initialize the game board
-		board = new Board();
-
 	}
+
+	private void initializeGame() {
+		board = new Board();
+		currentState = GameState.PLAYING;
+		currentPlayer = Player.CROSS;
+	}
+
 
 	//The entry point of the program. It sets up and displays the graphical user interface.
 	public static void main(String[] args) {
-		// Run GUI code in Event Dispatch thread for thread safety.
-		SwingUtilities.invokeLater(new Runnable() {
-	         public void run() {
-				//create a main window to contain the panel
-				JFrame frame = new JFrame(TITLE);
+		SwingUtilities.invokeLater(() -> {
+			GameMain gameMainPanel = new GameMain();
+			gameMainPanel.createAndShowGUI();
+		});
+	}
+	private void createAndShowGUI() {
+		// Create a main window to contain the panel
+		JFrame frame = new JFrame(TITLE);
 
-				//Create the new GameMain panel and add it to the frame
-				 GameMain gameMainPanel = new GameMain();
-				 frame.add(gameMainPanel);
+		// Create the new GameMain panel and add it to the frame
+		frame.add(this);
 
-				 //Set the default close operation of the fame to EXIT_ON_CLOSE
-				 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				 frame.pack();
-				 frame.setLocationRelativeTo(null);
-				 frame.setVisible(true);
-	         }
-		 });
+		// Set the default close operation of the frame to EXIT_ON_CLOSE
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.pack();
+		frame.setLocationRelativeTo(null);
+		frame.setVisible(true);
 	}
 
 	//Custom painting on the panel. It paints the game board and updates the status bar based on the current state of the game.
@@ -113,36 +110,29 @@ public class GameMain extends JPanel implements MouseListener{
 				statusBar.setForeground(Color.RED);
 				statusMessage = "It's a Draw! Click to play again.";
 				break;
-			case X_WON:
-				statusMessage = "'X' Won! Click to play again.";
+			case CROSS_WON:
+				statusMessage = "'Cross' Won! Click to play again.";
 				break;
-			case O_WON:
-				statusMessage = "'O' Won! Click to play again.";
+			case NOUGHT_WON:
+				statusMessage = "'Nought' Won! Click to play again.";
 				break;
 		}
 		statusBar.setText(statusMessage);
 	}
 
 	public void initGame() {
-		// Initialize the cells and reset game state
-		for (int row = 0; row < ROWS; ++row) {
-			for (int col = 0; col < COLS; ++col) {
-				board.cells[row][col].content = Player.EMPTY; // Use proper enum value
-			}
-		}
-		currentState = GameState.PLAYING;
-		currentPlayer = Player.X;
+		// Call the initializeGame() method to reset the game board
+		initializeGame();
 	}
 
 	public void updateGame(Player thePlayer, int row, int col) {
 		if (board.hasWon(thePlayer, row, col)) {
-			currentState = thePlayer == Player.X ? GameState.X_WON : GameState.O_WON;
+			currentState = thePlayer == Player.CROSS ? GameState.CROSS_WON: GameState.NOUGHT_WON;
 		} else if (board.isDraw()) {
 			currentState = GameState.DRAW;
 		}
 	}
 
-	// implementation and handles mouse click events on the panel.
 	public void mouseClicked(MouseEvent e) {
 		int mouseX = e.getX();
 		int mouseY = e.getY();
@@ -151,43 +141,24 @@ public class GameMain extends JPanel implements MouseListener{
 
 		if (currentState == GameState.PLAYING) {
 			if (rowSelected >= 0 && rowSelected < ROWS && colSelected >= 0 && colSelected < COLS
-					&& board.cells[rowSelected][colSelected].content == Player.EMPTY) {
-				board.cells[rowSelected][colSelected].content = currentPlayer;
+					&& board.cells[rowSelected][colSelected] == Player.EMPTY) {
+				board.cells[rowSelected][colSelected] = currentPlayer;
 				updateGame(currentPlayer, rowSelected, colSelected);
-
-				// Simplify switching players
-				currentPlayer = (currentPlayer == Player.X) ? Player.O: Player.X;
+				currentPlayer = currentPlayer == Player.CROSS ? Player.NOUGHT : Player.CROSS;
 			}
 		} else {
-			// Restart the game
 			initGame();
 		}
 
 		repaint();
 	}
 
-
-		
-	
-	@Override
-	public void mousePressed(MouseEvent e) {
-		//  Auto-generated, event not used
-		
-	}
-	@Override
-	public void mouseReleased(MouseEvent e) {
-		//  Auto-generated, event not used
-		
-	}
-	@Override
-	public void mouseEntered(MouseEvent e) {
-		// Auto-generated,event not used
-		
-	}
-	@Override
-	public void mouseExited(MouseEvent e) {
-		// Auto-generated, event not used
-		
-	}
-
+	public void mousePressed(MouseEvent e) {}
+	public void mouseReleased(MouseEvent e) {}
+	public void mouseEntered(MouseEvent e) {}
+	public void mouseExited(MouseEvent e) {}
 }
+
+
+
+
