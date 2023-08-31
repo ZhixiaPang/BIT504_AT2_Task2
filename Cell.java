@@ -5,14 +5,15 @@ import java.awt.Graphics2D;
 
 public class Cell {
     //content of this cell (EMPTY, CROSS, NOUGHT)
-	private Player content;
+	private final Player content;
 	//row and column of this cell
-	private int row, col;
+	private final int row, col;
 	
 	// Constructor to initialise this cell with the specified row and col
 	public Cell(int row, int col) {
 		this.row = row;
 		this.col = col;
+		this.content = Player.EMPTY; // Assign a default value to 'content'
 	}
 
 	public Player getContent() {
@@ -24,11 +25,12 @@ public class Cell {
 	public void paint(Graphics g) {
 		// Graphics2D allows setting of pen's stroke size
 		Graphics2D g2d = (Graphics2D) g;
-		g2d.setStroke(new BasicStroke(GameMain.SYMBOL_STROKE_WIDTH, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+		g2d.setStroke(new BasicStroke(GameMain.SYMBOL_STROKE_WIDTH *2, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
 		//draw the symbol in the position
 		int x1 = col * GameMain.CELL_SIZE + GameMain.CELL_PADDING;
 		int y1 = row * GameMain.CELL_SIZE + GameMain.CELL_PADDING;
+
 		if (content == Player.CROSS) {
 			g2d.setColor(Color.RED);
 			int x2 = (col + 1) * GameMain.CELL_SIZE - GameMain.CELL_PADDING;

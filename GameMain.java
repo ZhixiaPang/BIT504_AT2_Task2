@@ -3,33 +3,31 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
-/* declares the GameMain class. It extends JPanel and implements the MouseListener interface*/
+//Declares the GameMain class. It extends JPanel and implements the MouseListener interface
 public class GameMain extends JPanel implements MouseListener{
 	// Constants for the game dimensions and appearance
 	public static final int ROWS = 3;
 	public static final int COLS = 3;
-
 	// defines a constant string named TITLE with the value "Tic Tac Toe"
 	public static final String TITLE = "Tic Tac Toe";
 
-	//The constant defines each cell in the tic-tac-toe grid is a square with sides of length 100 pixels.
+	// defines each cell in the tic-tac-toe grid is a square with sides of length 100 pixels.
 	public static final int CELL_SIZE = 100;
-
-	// Constant: Canvas width based on column count and cell size
+	//drawing canvas
 	public static final int CANVAS_WIDTH = CELL_SIZE * COLS;
-	//// Constant: Canvas height based on row count and cell size
 	public static final int CANVAS_HEIGHT = CELL_SIZE * ROWS;
-	//Padding around symbols within each cell
+	//Noughts and Crosses are displayed inside a cell, with padding from border
 	public static final int CELL_PADDING = CELL_SIZE / 6;
-	// Size of the symbols drawn in each cell
 	public static final int SYMBOL_SIZE = CELL_SIZE - CELL_PADDING * 2;
-	// Width of the stroke used to draw the symbols
 	public static final int SYMBOL_STROKE_WIDTH = 8;
-	
+
+
 	//Declare game object variables
+	//the game board
 	private Board board;
+	//create the enumeration for (GameState currentState)
 	private enum GameState { PLAYING, DRAW, CROSS_WON, NOUGHT_WON }
-	private GameState currentState;
+	private GameState currentState = GameState.PLAYING;
 	// variable keeps track of whose turn it is
 	private Player currentPlayer;
 	// for displaying game status message on the GUI
@@ -52,7 +50,8 @@ public class GameMain extends JPanel implements MouseListener{
 		addMouseListener(this);
 
 		statusBar = new JLabel("         ");
-		statusBar.setFont(new Font(Font.DIALOG_INPUT, Font.BOLD, 14));
+		statusBar.setFont(new Font("Arial", Font.BOLD, 14));
+
 		statusBar.setBorder(BorderFactory.createEmptyBorder(2, 5, 4, 5));
 		statusBar.setOpaque(true);
 		statusBar.setBackground(Color.LIGHT_GRAY);
@@ -70,30 +69,28 @@ public class GameMain extends JPanel implements MouseListener{
 
 
 	//The entry point of the program. It sets up and displays the graphical user interface.
-	public static void main(String[] args) {
+	private void createAndShowGUI() {
 		SwingUtilities.invokeLater(() -> {
-			GameMain gameMainPanel = new GameMain();
-			gameMainPanel.createAndShowGUI();
+			// Create a main window to contain the panel
+			JFrame frame = new JFrame(TITLE);
+
+			// Create the new GameMain panel and add it to the frame
+			frame.add(this);
+
+			// Set the default close operation of the frame to EXIT_ON_CLOSE
+			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			frame.pack();
+			frame.setLocationRelativeTo(null);
+			frame.setVisible(true);
 		});
 	}
-	private void createAndShowGUI() {
-		// Create a main window to contain the panel
-		JFrame frame = new JFrame(TITLE);
 
-		// Create the new GameMain panel and add it to the frame
-		frame.add(this);
-
-		// Set the default close operation of the frame to EXIT_ON_CLOSE
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.pack();
-		frame.setLocationRelativeTo(null);
-		frame.setVisible(true);
-	}
 
 	//Custom painting on the panel. It paints the game board and updates the status bar based on the current state of the game.
 	public void paintComponent(Graphics g) {
 		//fill background and set colour to white
 		super.paintComponent(g);
+
 		setBackground(Color.WHITE);
 
 		//ask the game board to paint itself
@@ -101,23 +98,16 @@ public class GameMain extends JPanel implements MouseListener{
 
 		// Simplify status bar update using switch
 		statusBar.setForeground(Color.BLACK);
-		String statusMessage = "";
-		switch (currentState) {
-			case PLAYING:
-				statusMessage = "'" + currentPlayer + "' Turn";
-				break;
-			case DRAW:
-				statusBar.setForeground(Color.RED);
-				statusMessage = "It's a Draw! Click to play again.";
-				break;
-			case CROSS_WON:
-				statusMessage = "'Cross' Won! Click to play again.";
-				break;
-			case NOUGHT_WON:
-				statusMessage = "'Nought' Won! Click to play again.";
-				break;
-		}
-		statusBar.setText(statusMessage);
+		String statusMessage = switch (currentState) {
+            case PLAYING -> "'" + currentPlayer + "' Turn";
+            case DRAW -> {
+                statusBar.setForeground(Color.RED);
+                yield "It's a Draw! Click to play again.";
+            }
+            case CROSS_WON -> "'Cross' Won! Click to play again.";
+            case NOUGHT_WON -> "'Nought' Won! Click to play again.";
+        };
+        statusBar.setText(statusMessage);
 	}
 
 	public void initGame() {
