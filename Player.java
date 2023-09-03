@@ -1,7 +1,6 @@
-/**
- * Enumeration for the players move
- */
-
+// Enumeration for the players' moves
 public enum Player {
-	Empty, Cross, Nought
+	EMPTY, // Represents an empty cell
+	CROSS, // Represents a cell with a cross (X)
+	NOUGHT // Represents a cell with a nought (O)
 }
