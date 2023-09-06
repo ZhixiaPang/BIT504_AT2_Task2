@@ -22,10 +22,10 @@ public class GameMain extends JPanel implements MouseListener {
     private JLabel statusBar;      // Status bar for displaying game messages
 
     public GameMain() {
-        super();
-        initializeUI();
-        initializeGame();
-        createAndShowGUI();
+        super(); // Constructor for the GameMain class.
+        initializeUI(); // Initializes the game by setting up the user interface,
+        initializeGame(); // initializing game components, creating and displaying the GUI,
+        createAndShowGUI();  // and starting the game loop.
         startGameLoop();
     }
 
